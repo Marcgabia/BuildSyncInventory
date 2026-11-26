@@ -1,0 +1,89 @@
+# Team standard (B3): services api, frontend, db, scheduler.
+# Galing sa CRM ni Ralph, inayos para tumugma sa standard.
+# Ang mga ${...} ay binabasa mula sa .env na katabi ng file na ito.
+
+# Iisang set ng environment para sa api at scheduler (para hindi magkaiba).
+x-laravel-env: &laravel-env
+  APP_NAME: "${APP_NAME:-My System}"
+  APP_ENV: "${APP_ENV:-local}"
+  APP_DEBUG: "${APP_DEBUG:-true}"
+  APP_URL: http://${PUBLIC_HOST:-localhost}:8000
+  APP_TIMEZONE: Asia/Manila
+  DB_CONNECTION: mysql
+  DB_HOST: db
+  DB_PORT: 3306
+  DB_DATABASE: app_db
+  DB_USERNAME: app_user
+  DB_PASSWORD: app_password
+  SESSION_DRIVER: database
+  CACHE_STORE: database
+  QUEUE_CONNECTION: database
+  # B6 – integration variables
+  SYSTEM_CODE: "${SYSTEM_CODE:-}"
+  INTEGRATION_ENABLED: "${INTEGRATION_ENABLED:-false}"
+  INTEGRATION_API_KEY: "${INTEGRATION_API_KEY:-}"
+  CRM_API_URL: "${CRM_API_URL:-}"
+  CRM_API_KEY: "${CRM_API_KEY:-}"
+  PROC_API_URL: "${PROC_API_URL:-}"
+  PROC_API_KEY: "${PROC_API_KEY:-}"
+  INV_API_URL: "${INV_API_URL:-}"
+  INV_API_KEY: "${INV_API_KEY:-}"
+  HR_API_URL: "${HR_API_URL:-}"
+  HR_API_KEY: "${HR_API_KEY:-}"
+
+services:
+  api:
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:80"
+    environment:
+      <<: *laravel-env
+    depends_on:
+      db:
+        condition: service_healthy
+
+  scheduler:
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["php", "artisan", "schedule:work"]
+    environment:
+      <<: *laravel-env
+      RUN_MIGRATIONS: "false"   # ang api lang ang nagma-migrate
+    depends_on:
+      - api
+
+  db:
+    restart: unless-stopped
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: app_db
+      MYSQL_USER: app_user
+      MYSQL_PASSWORD: app_password
+      MYSQL_ROOT_PASSWORD: root_password
+    # Walang "ports": ang MySQL ay sa loob lang ng Docker (standard B3).
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-proot_password"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  frontend:
+    restart: unless-stopped
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://${PUBLIC_HOST:-localhost}:8000/api
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+
+volumes:
+  mysql_data:
