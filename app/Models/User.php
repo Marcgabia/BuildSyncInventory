@@ -18,9 +18,13 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'employee_no',
         'name',
         'email',
         'password',
+        'employment_status',
+        'can_login',
+        'role',
     ];
 
     /**
@@ -43,6 +47,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'can_login' => 'boolean',
         ];
     }
 }

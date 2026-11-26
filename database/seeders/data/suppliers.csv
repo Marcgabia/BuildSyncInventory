@@ -1,0 +1,6 @@
+supplier_code,name,contact_person,email,phone,status
+SUP-0001,Golden Harvest Trading,Ramil Bautista,sales@goldenharvest.example.com,0917-000-0001,Active
+SUP-0002,Pacific Canned Goods Inc.,Joy Navarro,orders@pacificcanned.example.com,0917-000-0002,Active
+SUP-0003,Fresh Springs Beverages,Arnel Castillo,supply@freshsprings.example.com,0917-000-0003,Active
+SUP-0004,HomeCare Distributors,Rhea Domingo,po@homecare.example.com,0917-000-0004,Active
+SUP-0005,Bright Smile Personal Care,Dennis Lim,sales@brightsmile.example.com,0917-000-0005,Active
